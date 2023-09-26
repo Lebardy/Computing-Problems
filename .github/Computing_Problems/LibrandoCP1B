@@ -1,0 +1,350 @@
+// Jan Angel H. Librando
+// CSS 4 - B
+// Date Started: August 18, 2023
+// Date Finished: August 18, 2023
+// allows a user to create a record of a person's height and weight, the program then uses that information to determine their BMI
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <windows.h>
+#include <unistd.h>
+#include <conio.h>
+
+#define size 2
+#define name 50
+
+typedef struct record
+{
+    char lastname[name];
+    char firstname[name];
+    float height;
+    float weight;
+    float bmi;
+    char assess[name];
+} rec;
+
+char menu();
+int input(rec record[size], int count);
+void search(rec record[size], int count);
+void display_all(rec record[size], int count);
+float bmi(float height, float weight);
+void gotoxy(short x, short y);
+void dots(int count);
+void quit();
+char *type(float bmi);
+
+int main()
+{
+    rec record[size];
+    int count = 0;
+    char choice;
+
+    do
+    {
+        choice = menu();
+
+        switch (choice)
+        {
+        case 'a':
+            system("cls");
+            count = input(record, count);
+            break;
+
+        case 'b':
+            system("cls");
+            search(record, count);
+            break;
+
+        case 'c':
+            system("cls");
+            display_all(record, count);
+            break;
+
+        case 'd':
+            system("cls");
+            quit();
+            break;
+
+        default:
+            system("cls");
+            printf("Incorrect Input! Please try again.");
+            printf("\nPress Enter to Continue");
+            dots(3);
+            getch();
+            break;
+        }
+    } while (count != size + 1);
+
+    return 0;
+}
+
+void gotoxy(short x, short y)
+{
+    COORD pos = {x, y};
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+}
+
+char menu()
+{
+    char choice;
+    int valid = 0;
+    do
+    {
+        system("cls");
+
+        printf("\t\tMenu");
+        printf("\nA. Add New Record");
+        printf("\nB. Search for Record");
+        printf("\nC. Display All Records");
+
+        printf("\n\nChoice: ");
+        scanf(" %c", &choice);
+
+        if (isalpha(choice))
+        {
+            valid = 1;
+        }
+
+        if (valid == 0)
+        {
+            printf("\n\nInvalid Choice. Please Try Again.\n");
+            getch();
+        }
+    } while (!valid);
+
+    return choice;
+}
+
+int input(rec record[size], int count)
+{
+    char ln[name], fn[name];
+    char *assess;
+    float height = 0, weight = 0, BMI = 0;
+    int i;
+
+    if (count == size)
+    {
+        printf("Array is Full!");
+        printf("\nPress Enter to Continue");
+        dots(3);
+        getch();
+
+        return count;
+    }
+
+    printf("Enter Details: ");
+
+    fflush(stdin);
+    // last name
+    printf("\n\nLast Name: ");
+    fgets(ln, sizeof(ln), stdin);
+    ln[strcspn(ln, "\n")] = 0;
+    ln[0] = toupper(ln[0]); // capatilize first letter
+    for (i = 1; i < strlen(ln); i++)
+    {
+        ln[i] = tolower(ln[i]);
+    }
+    strcpy(record[count].lastname, ln);
+
+    // first name
+    printf("First Name: ");
+    fgets(fn, sizeof(fn), stdin);
+    fn[strcspn(fn, "\n")] = 0;
+    fn[0] = toupper(fn[0]); // capatilize first letter
+    for (i = 1; i < strlen(fn); i++)
+    {
+        fn[i] = tolower(fn[i]);
+    }
+    strcpy(record[count].firstname, fn);
+
+    // height
+    printf("Height(cm): ");
+    scanf("%f", &height);
+    record[count].height = height;
+
+    // weight
+    printf("Weight(lb): ");
+    scanf("%f", &weight);
+    record[count].weight = weight;
+
+    // bmi calculation function
+    BMI = bmi(height, weight);
+    record[count].bmi = BMI;
+
+    // bmi type
+    assess = type(BMI);
+    strcpy(record[count].assess, assess);
+
+    count++;
+
+    return count;
+}
+
+float bmi(float height, float weight)
+{
+    float meters = 0, kilograms = 0;
+
+    // convert height to meters
+    meters = height / 100;
+
+    // convert weight to kilograms
+    kilograms = weight * 0.45359237;
+
+    // calculate for bmi
+    return kilograms / (meters * meters);
+}
+
+char *type(float bmi)
+{
+    static char assessment[name];
+
+    if (bmi < 18.5)
+    {
+        strcpy(assessment, "Underweight");
+    }
+
+    if (bmi >= 18.5 && bmi < 24.9)
+    {
+        strcpy(assessment, "Normal Weight");
+    }
+
+    if (bmi >= 25 && bmi < 29.9)
+    {
+        strcpy(assessment, "Overweight");
+    }
+
+    if (bmi > 30)
+    {
+        strcpy(assessment, "Obese");
+    }
+
+    return assessment;
+}
+
+void search(rec record[size], int count)
+{
+    char ln[name], fn[name];
+    int i;
+
+    if (count == 0)
+    {
+        printf("No Available Records. Press Enter to Contnue");
+        dots(3);
+        getch();
+        return;
+    }
+
+    fflush(stdin);
+
+    printf("Last Name: ");
+    fgets(ln, sizeof(ln), stdin);
+    ln[strcspn(ln, "\n")] = 0;
+
+    printf("First Name: ");
+    fgets(fn, sizeof(fn), stdin);
+    fn[strcspn(fn, "\n")] = 0;
+
+    printf("\n\n");
+    for (i = 0; i < count; i++)
+    {
+        if (strcmpi(record[i].lastname, ln) == 0 && strcmpi(record[i].firstname, fn) == 0)
+        {
+            printf("%s, ", record[i].lastname);
+            printf("%s", record[i].firstname);
+            printf("\nHeight: %.2f centimeters", record[i].height);
+            printf("\nWeight: %.2f pounds", record[i].weight);
+            printf("\nYour BMI is %.2f and you are %s", record[i].bmi, record[i].assess);
+
+            printf("\n\nPress any key to continue");
+            dots(3);
+            getch();
+            break;
+        }
+    }
+}
+
+void display_all(rec record[size], int count)
+{
+    int i, x = 2, y = 1;
+
+    if (count == 0)
+    {
+        printf("No Available Records. Press Enter to Contnue");
+        dots(3);
+        getch();
+        return;
+    }
+
+    // headers
+    gotoxy(x, y);
+    printf("Last Name");
+    x += 20;
+    gotoxy(x, y);
+    printf("First Name");
+    x += 20;
+    gotoxy(x, y);
+    printf("Height(CM)");
+    x += 20;
+    gotoxy(x, y);
+    printf("Weight(lb)");
+    x += 20;
+    gotoxy(x, y);
+    printf("BMI");
+    x += 20;
+    gotoxy(x, y);
+    printf("Category");
+    y += 2;
+
+    // for loop for displaying records
+    for (i = 0; i < count; i++)
+    {
+        x = 2;
+        gotoxy(x, y);
+        printf("%s", record[i].lastname);
+        x += 20;
+
+        gotoxy(x, y);
+        printf("%s", record[i].firstname);
+        x += 20;
+
+        gotoxy(x, y);
+        printf("%.2f", record[i].height);
+        x += 20;
+
+        gotoxy(x, y);
+        printf("%.2f", record[i].weight);
+        x += 20;
+
+        gotoxy(x, y);
+        printf("%.2f", record[i].bmi);
+        x += 20;
+
+        gotoxy(x, y);
+        printf("%s", record[i].assess);
+        y++;
+    }
+
+    x = 1;
+    y += 3;
+    gotoxy(x, y);
+    printf("Press Enter to Continue");
+    getch();
+}
+
+void dots(int count)
+{
+    for (int i = 0; i < count; i++)
+    {
+        printf("...");
+        fflush(stdout);
+        usleep(500000);
+    }
+}
+
+void quit()
+{
+    printf("Exiting Program! Press Enter to Continue");
+    dots(3);
+    getch();
+}
